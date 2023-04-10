@@ -9,6 +9,7 @@ def parse_arguments():
     parser.add_argument('input_file', help='Input Excel file')
     parser.add_argument('output_dir', help='Output directory for the split Excel files')
     parser.add_argument('-c', '--create', help='Create output directory if it does not exist', action='store_true')
+    parser.add_argument('-f', '--filter', help='Filter trades by cleared (C) or uncleared (U)', choices=['C', 'U'], default=None)
     return parser.parse_args()
 
 def main():
@@ -17,8 +18,11 @@ def main():
     # Read the Excel file
     df = pd.read_excel(args.input_file)
 
-    # Filter rows based on the conditions: Type is 'IRS Fix-Float' and Clr is 'C'
-    filtered_df = df[(df['Type'] == 'IRS Fix-Float') & (df['Clr'] == 'C')]
+    # Filter rows based on the conditions: Type is 'IRS Fix-Float'
+    filtered_df = df[df['Type'] == 'IRS Fix-Float']
+
+    if args.filter:
+        filtered_df = filtered_df[filtered_df['Clr'] == args.filter]
 
     # Extract date from the 'Trade Time' column and store it in a new column called 'Trade Date'
     filtered_df['Trade Date'] = pd.to_datetime(filtered_df['Trade Time']).dt.date
