@@ -23,12 +23,12 @@ def read_data(transaction_file, yield_curve_file):
     yield_curve_df = pd.read_csv(yield_curve_file)
     return transactions_df, yield_curve_df
 
-def parse_datetime(date_string):
-    formats = ["%m/%d/%Y %H:%M:%S", "%m/%d/%y %H:%M:%S", "%m/%d/%Y", "%m/%d/%y"]
+def parse_date(date_string):
+    formats = ["%m/%d/%Y", "%m/%d/%y"]
 
     for date_format in formats:
         try:
-            return datetime.strptime(date_string, date_format)
+            return ql.DateParser.parseFormatted(date_string, date_format)
         except:
             pass
 
@@ -36,7 +36,7 @@ def parse_datetime(date_string):
 def build_helpers(yield_curve_df):
     rate_helpers = []
     for _, row in yield_curve_df.iterrows():
-        tenor, description, rate, source, update = row['Tenor'], row['Description'], row['Yield'], row['Source'], parse_datetime(row['Update'])
+        tenor, description, rate, source, update = row['Tenor'], row['Description'], row['Yield'], row['Source'], parse_date(row['Update'])
 
         if 'Index' in description:
             rate_helpers.append(ql.DepositRateHelper(ql.QuoteHandle(ql.SimpleQuote(rate/100)), 
@@ -69,7 +69,7 @@ def price_swaps(transaction_df, yield_curve, index):
     results = []
     for _, row in transaction_df.iterrows():
         try:
-            effective_date, maturity_date, rate_1, leg_1, rate_2, leg_2, currency, notional, payment_frequency_1, payment_frequency_2 = parse_datetime(row['Effective']), parse_datetime(row['Maturity']), row['Rate 1'], row['Leg 1'], row['Rate 2'], row['Leg 2'], row['Curr'], row['Not.'], row['PF 1'], row['PF 2']
+            effective_date, maturity_date, rate_1, leg_1, rate_2, leg_2, currency, notional, payment_frequency_1, payment_frequency_2 = parse_date(row['Effective']), parse_date(row['Maturity']), row['Rate 1'], row['Leg 1'], row['Rate 2'], row['Leg 2'], row['Curr'], row['Not.'], row['PF 1'], row['PF 2']
             fixed_leg_frequency = ql.Period(payment_frequency_1 if leg_1 == 'FIXED' else payment_frequency_2)
             float_leg_frequency = ql.Period(payment_frequency_1 if leg_1 != 'FIXED' else payment_frequency_2)
 
@@ -148,7 +148,6 @@ def main():
         ("2013-03-05", 1.2850 /100),
         ("2013-03-11", 1.2800 /100),
         ("2013-03-14", 1.2800 /100),
-        ("2013-05-22", 1.2733 /100),
         ("2013-05-28", 1.2733 /100),
         ("2013-05-29", 1.2733 /100),
         ("2013-06-05", 1.2733 /100),
