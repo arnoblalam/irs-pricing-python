@@ -19,8 +19,8 @@ def parse_arguments():
     return parser.parse_args()
 
 def read_data(transaction_file, yield_curve_file):
-    transactions_df = pd.read_csv(transaction_file)
-    yield_curve_df = pd.read_csv(yield_curve_file)
+    transactions_df = pd.read_excel(transaction_file)
+    yield_curve_df = pd.read_excel(yield_curve_file)
     return transactions_df, yield_curve_df
 
 def parse_date(date_string):
