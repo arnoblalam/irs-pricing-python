@@ -31,5 +31,5 @@ for transaction_file in "$transaction_base"/*_output.xlsx; do
     evaluation_date="$date_str"
 
     # Run the price_swaps.py script with the required arguments
-    ./src/price_swaps.py "$transaction_file" "$yield_curve_file" "$output_file" "$evaluation_date"
+    ./src/price_swaps_cad.py "$transaction_file" "$yield_curve_file" "$output_file" "$evaluation_date"
 done
