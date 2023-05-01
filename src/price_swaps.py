@@ -66,6 +66,7 @@ def build_yield_curve(rate_helpers, evaluation_date):
     return yield_curve
 
 def price_swaps(transaction_df, yield_curve, index):
+    results = []
     for _, row in transaction_df.iterrows():
         try:
             effective_date, maturity_date, rate_1, leg_1, rate_2, leg_2, currency, notional, payment_frequency_1, payment_frequency_2 = parse_date(row['Effective']), parse_date(row['Maturity']), row['Rate 1'], row['Leg 1'], row['Rate 2'], row['Leg 2'], row['Curr'], row['Not.'], row['PF 1'], row['PF 2']
@@ -113,11 +114,15 @@ def price_swaps(transaction_df, yield_curve, index):
             fair_rate = swap.fairRate()*100
             difference = (fixed_rate - fair_rate)*100
 
-            print(f"Fair rate: {fair_rate:.2f}%, Difference: {difference:.2f} bps")
+            row['Fair Rate'] = fair_rate
+            row['Difference'] = difference
+            results.append(row)
 
         except Exception as e:
             logging.exception(f"Error processing swap:\n{row}\nError: {str(e)}")
             continue
+    
+    return pd.DataFrame(results)
 
 def main():
     args = parse_arguments()
@@ -148,9 +153,8 @@ def main():
         index.addFixing(ql_fixing_date, fixing)
 
 
-    price_swaps(transactions_data, yield_curve, index)
-
-    #priced_swaps_df.to_excel(args.output_file, index=False)
+    priced_swaps_df = price_swaps(transactions_data, yield_curve, index)
+    priced_swaps_df.to_excel(args.output_file, index=False)
 
     if args.log_file:
         with open(args.log_file, 'a') as log_file:
