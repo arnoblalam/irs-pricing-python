@@ -130,6 +130,8 @@ def main():
 
     yield_curve_data = pd.read_excel(args.yield_curve_file)
     transactions_data = pd.read_excel(args.transaction_file)
+    historical_fixings_data = pd.read_excel("data/raw/historical_fixings/CDOR_fixings.xlsx")
+
 
     evaluation_date_dt = datetime.strptime(args.evaluation_date, '%Y-%m-%d')
     evaluation_date = ql.Date(evaluation_date_dt.day, evaluation_date_dt.month, evaluation_date_dt.year)
@@ -140,31 +142,18 @@ def main():
 
     # Create the CAD Libor 3M index
     index = ql.Cdor(ql.Period('3M'), ql.YieldTermStructureHandle(yield_curve))
-    
-    historical_fixings = [
-        ("2013-02-21", 1.2850 /100),
-        ("2013-02-22", 1.2850 /100),
-        ("2013-02-26", 1.2850 /100),
-        ("2013-03-05", 1.2850 /100),
-        ("2013-03-11", 1.2800 /100),
-        ("2013-03-14", 1.2800 /100),
-        ("2013-05-22", 1.2733 /100),
-        ("2013-05-28", 1.2733 /100),
-        ("2013-05-29", 1.2733 /100),
-        ("2013-06-05", 1.2733 /100),
-        ("2013-06-14", 1.2898 /100),
-        ("2013-06-17", 1.2730 /100),
-        ("2013-08-27", 1.2750 /100),
-        ("2013-08-29", 1.2750 /100),
-        ("2013-09-11", 1.2750 /100),
-        ("2013-09-16", 1.2750 /100),
-        ("2013-09-18", 1.2750 /100)
-        ]
 
-    for date, fixing in historical_fixings:
-        fixing_date = datetime.strptime(date, "%Y-%m-%d")
-        ql_fixing_date = ql.Date(fixing_date.day, fixing_date.month, fixing_date.year)
-        index.addFixing(ql_fixing_date, fixing)
+
+   # Add historical fixings to the index
+    for _, row in historical_fixings_data.iterrows():
+        fixing_date_dt = row['Date']
+        fixing = row['PX_LAST'] / 100  # Convert percentage to decimal
+
+        # fixing_date_dt = datetime.strptime(fixing_date_str, "%m/%d/%y")
+        ql_fixing_date = ql.Date(fixing_date_dt.day, fixing_date_dt.month, fixing_date_dt.year)
+
+        if ql_fixing_date <= evaluation_date:
+            index.addFixing(ql_fixing_date, fixing)
 
 
     priced_swaps_df = price_swaps(transactions_data, yield_curve, index)
