@@ -92,20 +92,21 @@ def price_swaps(transaction_df, yield_curve, index):
                                         ql.Canada(), 
                                         ql.ModifiedFollowing, 
                                         ql.ModifiedFollowing, 
-                                        ql.DateGeneration.Forward, 
-                                        False)
-            float_schedule = ql.Schedule(effective_date, maturity_date, 
+                                        ql.DateGeneration.Backward, 
+                                        True)
+            float_schedule = ql.Schedule(effective_date, 
+                                         maturity_date, 
                                         float_leg_frequency, 
                                         ql.Canada(), 
                                         ql.ModifiedFollowing, 
                                         ql.ModifiedFollowing, 
-                                        ql.DateGeneration.Forward, 
-                                        False)
+                                        ql.DateGeneration.Backward, 
+                                        True)
             swap = ql.VanillaSwap(ql.VanillaSwap.Payer, 
                                 notional, 
                                 fixed_schedule, 
                                 fixed_rate/100, 
-                                ql.Thirty360(ql.Thirty360.BondBasis), 
+                                ql.Actual365Fixed(ql.Actual365Fixed.Canadian), 
                                 float_schedule, 
                                 index, 
                                 float_rate/100, 

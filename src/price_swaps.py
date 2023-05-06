@@ -92,15 +92,16 @@ def price_swaps(transaction_df, yield_curve, index):
                                         ql.UnitedStates(), 
                                         ql.ModifiedFollowing, 
                                         ql.ModifiedFollowing, 
-                                        ql.DateGeneration.Forward, 
-                                        False)
-            float_schedule = ql.Schedule(effective_date, maturity_date, 
+                                        ql.DateGeneration.Backward, 
+                                        True)
+            float_schedule = ql.Schedule(effective_date, 
+                                         maturity_date, 
                                         float_leg_frequency, 
                                         ql.UnitedStates(), 
                                         ql.ModifiedFollowing, 
                                         ql.ModifiedFollowing, 
-                                        ql.DateGeneration.Forward, 
-                                        False)
+                                        ql.DateGeneration.Backward, 
+                                        True)
             swap = ql.VanillaSwap(ql.VanillaSwap.Payer, 
                                 notional, 
                                 fixed_schedule, 
