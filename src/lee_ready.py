@@ -2,6 +2,7 @@
 
 import argparse
 import pandas as pd
+import numpy as np
 
 def recode_rates(rate):
     """ Recode rates to account for basis points. """
@@ -24,16 +25,35 @@ def lee_ready_algorithm(data, rate_col, time_col):
     data_sorted['Estimated Spread'] = data_sorted['Estimated Ask'] - data_sorted['Estimated Bid']
     return data_sorted
 
+def apply_lee_ready_to_group(group):
+    return lee_ready_algorithm(group, 'Rates recoded', 'Trade Time')
+
 def process_file(input_file, output_file):
     """ Process the Excel file to recode rates and apply Lee and Ready algorithm. """
     # Read the Excel file
     data = pd.read_excel(input_file)
 
+    # Convert date time columns to datetime objects
+    data['Trade Time'] = pd.to_datetime(data['Trade Time'])
+    data['Effective']  = pd.to_datetime(data['Effective']).dt.date
+    data['Maturity']   = pd.to_datetime(data['Maturity']).dt.date
+    data['Trade Date']   = pd.to_datetime(data['Trade Date']).dt.date
+
     # Recode rates
     data['Rates recoded'] = data['Rate 1'].apply(recode_rates)
 
+    # Round tenors to the nearest year and filter for specific tenors
+    data['Tenor Years'] = (data['Maturity'] - data['Effective'])/pd.Timedelta(days=365.25)
+    data['Tenor Years Rounded to Year'] = np.round(data['Tenor Years']).astype(int)
+    specified_tenors = [3, 5, 7, 10, 30]
+    conditions = ((data['Tenor Years Rounded to Year'].isin(specified_tenors)) & \
+    (data['Leg 1'].isin(['FIXED', 'USD-LIBOR-BBA', 'LIBOR'])) & \
+    (data['Leg 2'].isin(['FIXED', 'USD-LIBOR-BBA', 'LIBOR'])) & \
+    ((data['Effective'] - data['Trade Date']).dt.days <= 7))
+    filtered_data = data[conditions]
+
     # Run the Lee and Ready algorithm
-    results = lee_ready_algorithm(data, 'Rates recoded', 'Trade Time')
+    results = filtered_data.groupby('Tenor Years Rounded to Year').apply(apply_lee_ready_to_group)
 
     # Save results to the specified output file
     results.to_excel(output_file, index=False)
