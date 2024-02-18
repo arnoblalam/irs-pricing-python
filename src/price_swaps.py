@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# Name: price_swaps.py
+# Last Updated: 2023-05-06
+# Maintainer: Arnob L. Alam (arnoblalam@gmail.com)
+#
+# Description: This script prices interest rate swaps using QuantLib.
+
 import argparse
 import pandas as pd
 import numpy as np

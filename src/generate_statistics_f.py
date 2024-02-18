@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+#!/usr/bin/env python3
+
+# Name: generate_statistics_f.py
+# Last Updated: 2023-04-09
+# Maintainer: Arnob L. Alam (arnoblalam@gmail.com)
+#
+# Description: This script generates statistics for cleared and uncleared swaps for USD and CAD currencies.
+# It covers the period between 2013-09-09 and 2013-09-22. (Phase 3a of the clearing mandate).
+
 import pandas as pd
 import os
 

@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# Name: lee_ready.py
+# Last Uopdated: 2024-02-18
+# Maintainer: Arnob L. Alam (arnoblalam@gmail.com)
+
+# Description: This script processes trade data to estimate bid and ask prices using the Lee and Ready (1991) algorithm.
+
 import argparse
 import pandas as pd
 import numpy as np

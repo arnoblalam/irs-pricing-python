@@ -1,3 +1,15 @@
+#!/usr/bin/env Rscript
+
+# Name: DiD.R
+# Last Updated: 2023-06-16
+# Maintainer: Arnob L. Alam (arnoblalam@gmail.com)
+#
+# Description: This script performs a difference-in-differences (DID) regression analysis for
+# the effect of central clearing mandates on interest rate swaps pricing.  It has two models
+# - a basic model with no controls and an advanced model with additional control variables.
+# This version of the script also includes separate DiD regressions for each phase and plots
+# and uses the log ntionals as a control variable.
+
 # Load necessary packages
 library(tidyverse)
 library(readxl)
