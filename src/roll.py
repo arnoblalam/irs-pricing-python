@@ -16,7 +16,9 @@ def compute_bid_ask_spread(file_name):
         (df['PF 1'] != '1T') &
         (df['PF 2'] != '1T') &
         ((pd.to_datetime(df['Effective']) - pd.to_datetime(df['Trade Time'])).dt.days <= 7) &
-        (df['Curr'] == 'USD')
+        (df['Curr'] == 'USD') &
+        (df['Othr Pmnt'].isnull()) &
+        (df['Rate 2'].isnull())
     ]
     
     # Ensure contracts are ordered by Trade Time
