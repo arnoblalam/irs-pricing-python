@@ -14,6 +14,7 @@
 library(tidyverse)
 library(readxl)
 library(stargazer)
+library(stringr) 
 
 # Read the data from the Excel file
 data <- read_excel("data/USD_CAD_combined.xlsx", 
@@ -48,6 +49,13 @@ data$`Trade Hour Categorical` <- factor(data$`Trade Hour Categorical`,
                                                    "Afternoon", 
                                                    "Off Hours"))
 
+# Convert T to numeric
+data$T <- as.numeric(str_sub(data$T, end=-2))
+#data$`T` <- as.numeric(data$`T`)
+
+# Convert file date to factor
+# data$`File Date` <- factor(data$`File Date`)
+
 # Convert notional to log notional
 data$Ln_notional <- log(data$Not.)
 
@@ -58,7 +66,7 @@ did_model <- lm(
 summary(did_model)
 
 did_model_advanced <- lm(
-  Difference ~ Group * Period + Maturity + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`,
+  Difference ~ Group * Period + `T` + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`,
   data = data)
 
 summary(did_model_advanced)
@@ -70,8 +78,8 @@ stargazer(did_model, did_model_advanced, type = "text",
           align = TRUE,
           column.labels = c("Basic Model", "Advanced Model"),
           covariate.labels = c("Group", 
-                               "Period", 
-                               "Maturity",
+                               "Period",
+                               "Tenor",
                                "Log Notional", 
                                "Capped", 
                                "Morning Session", 
@@ -88,16 +96,17 @@ stargazer(did_model, did_model_advanced, type = "text",
           no.space = TRUE)
 
 # Save the LaTeX output to a file
-# summary_table <- stargazer(did_model, did_model_advanced, type = "latex",
-#                            title = "Difference-in-Differences Regression Results",
-#                            align = TRUE,
-#                            column.labels = c("Basic Model", "Advanced Model"),
-#                            covariate.labels = c("Group", "Period", "Group * Period",
-#                                                 "Maturity", "Not.", "Capped", "SEF", "Trade Hour"),
-#                            dep.var.caption = "Dependent variable: Difference",
-#                            dep.var.labels.include = FALSE,
-#                            digits = 4,
-#                            no.space = TRUE)
+summary_table <- stargazer(did_model, did_model_advanced, type = "text",
+                           title = "Difference-in-Differences Regression Results",
+                           align = TRUE,
+                           column.labels = c("Basic Model", "Advanced Model"),
+                           covariate.labels = c("Group", "Period", "Group * Period",
+                                                "Maturity", "Not.", "Capped", "SEF", "Trade Hour"),
+                           dep.var.caption = "Dependent variable: Difference",
+                           dep.var.labels.include = FALSE,
+                           digits = 4,
+                           no.space = TRUE,
+                           out = "reports/tables/filtered_did.txt")
 
 # Run separate DiD for each phase: simple model
 phase_1_model <- lm(
@@ -127,15 +136,15 @@ stargazer(phase_1_model, phase_2_model, phase_3_model,
 
 # Run separate DiD for each phase: adv model
 phase_1_model_adv <- lm(
-  Difference ~ Group * Period + Maturity + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`, 
+  Difference ~ Group * Period + `T` + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`, 
   data = data %>% filter(Phase == "Phase 1"))
 
 phase_2_model_adv <- lm(
-  Difference ~ Group * Period + Maturity + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`, 
+  Difference ~ Group * Period + `T` + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`, 
   data = data %>% filter(Phase == "Phase 2"))
 
 phase_3_model_adv <- lm(
-  Difference ~ Group * Period + Maturity + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`, 
+  Difference ~ Group * Period + `T` + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`, 
   data = data %>% filter(Phase == "Phase 3"))
 
 stargazer(phase_1_model_adv, phase_2_model_adv, phase_3_model_adv, 
@@ -145,7 +154,7 @@ stargazer(phase_1_model_adv, phase_2_model_adv, phase_3_model_adv,
           covariate.labels = c(
             "Group",
             "Period",
-            "Maturity",
+            "Tenor",
             "Notional",
             "Capped",
             "Morning Session",
