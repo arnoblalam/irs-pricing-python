@@ -44,7 +44,7 @@ def build_helpers(yield_curve_df):
     for _, row in yield_curve_df.iterrows():
         tenor, description, rate, source, update = row['Tenor'], row['Description'], row['Yield'], row['Source'], parse_date(row['Update'])
 
-        if 'Index' in description:
+        if 'CCLR' in description:
             rate_helpers.append(ql.DepositRateHelper(ql.QuoteHandle(ql.SimpleQuote(rate/100)), 
                                                      ql.Period(tenor), 
                                                      2, 
@@ -52,11 +52,20 @@ def build_helpers(yield_curve_df):
                                                      ql.ModifiedFollowing, 
                                                      False, 
                                                      ql.Actual360()))
-        elif 'Comdty' in description:
+
+        if 'CDOR' in description:
+            rate_helpers.append(ql.DepositRateHelper(ql.QuoteHandle(ql.SimpleQuote(rate/100)), 
+                                                     ql.Period(tenor), 
+                                                     2, 
+                                                     ql.Canada(), 
+                                                     ql.ModifiedFollowing, 
+                                                     False, 
+                                                     ql.Actual360()))
+        elif 'BA' in description:
             price = 100 - rate  # Convert quote to price
             imm_date = ql.IMM.nextDate(update)
             rate_helpers.append(ql.FuturesRateHelper(price, imm_date, ql.Cdor(ql.Period(tenor))))
-        elif 'BGN Curncy' in description:
+        elif 'CDSW' in description:
             rate_helpers.append(ql.SwapRateHelper(ql.QuoteHandle(ql.SimpleQuote(rate/100)), 
                                                   ql.Period(tenor), ql.Canada(), 
                                                   ql.Semiannual, 
@@ -76,6 +85,8 @@ def price_swaps(transaction_df, yield_curve, index):
     for _, row in transaction_df.iterrows():
         try:
             effective_date, maturity_date, rate_1, leg_1, rate_2, leg_2, currency, notional, payment_frequency_1, payment_frequency_2 = parse_date(row['Effective']), parse_date(row['Maturity']), row['Rate 1'], row['Leg 1'], row['Rate 2'], row['Leg 2'], row['Curr'], row['Not.'], row['PF 1'], row['PF 2']
+            if payment_frequency_1 == '1T' or payment_frequency_2 == '1T' or maturity_date <= effective_date:
+                continue
             fixed_leg_frequency = ql.Period(payment_frequency_1 if leg_1 == 'FIXED' else payment_frequency_2)
             float_leg_frequency = ql.Period(payment_frequency_1 if leg_1 != 'FIXED' else payment_frequency_2)
 
@@ -143,6 +154,9 @@ def main():
     evaluation_date_dt = datetime.strptime(args.evaluation_date, '%Y-%m-%d')
     evaluation_date = ql.Date(evaluation_date_dt.day, evaluation_date_dt.month, evaluation_date_dt.year)
     ql.Settings.instance().evaluationDate = evaluation_date
+    canada_calendar = ql.Canada()
+    if not canada_calendar.isBusinessDay(evaluation_date):
+        evaluation_date = canada_calendar.adjust(evaluation_date)
 
     rate_helpers = build_helpers(yield_curve_data)
     yield_curve = build_yield_curve(rate_helpers, evaluation_date)
