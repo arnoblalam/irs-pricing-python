@@ -1,14 +1,13 @@
 #!/usr/bin/env Rscript
 
 # Name: DiD.R
-# Last Updated: 2024-04-10
+# Last Updated: 2023-06-16
 # Maintainer: Arnob L. Alam (arnoblalam@gmail.com)
 #
-# Description: This script performs a difference-in-differences (DID) 
-# regression analysis for the effect of central clearing mandates on interest 
-# rate swaps pricing.  It has two models  - a basic model with no controls and 
-# an advanced model with additional control variables. This version of the 
-# script also includes separate DiD regressions for each phase and plots
+# Description: This script performs a difference-in-differences (DID) regression analysis for
+# the effect of central clearing mandates on interest rate swaps pricing.  It has two models
+# - a basic model with no controls and an advanced model with additional control variables.
+# This version of the script also includes separate DiD regressions for each phase and plots
 # and uses the log ntionals as a control variable.
 
 # Load necessary packages
@@ -18,7 +17,7 @@ library(stargazer)
 library(stringr) 
 
 # Read the data from the Excel file
-data <- read_excel("data/USD_CAD_combined.xlsx", 
+data <- read_excel("data/USD_CAD_combined_placebo.xlsx", 
                    col_types = c("text", "date", "text", 
                                  "numeric", "text", "text", "date", 
                                  "date", "numeric", "text", "numeric", 
@@ -31,8 +30,7 @@ data <- read_excel("data/USD_CAD_combined.xlsx",
 bound_L <- -50
 bound_H <- 50
 data_2 <- data %>% filter((Difference < bound_L) | (Difference > bound_H))
-data <- data %>% filter(Difference >= bound_L) %>% 
-  filter(Difference <= bound_H)
+data <- data %>% filter(Difference >= bound_L) %>% filter(Difference <= bound_H)
 
 
 # Convert the 'Group', 'Phase', and 'Period' variables to factors
@@ -73,8 +71,7 @@ did_model <- lm(
 summary(did_model)
 
 did_model_advanced <- lm(
-  Difference ~ Group * Period + Tenure + Ln_notional + Capped + 
-    `Trade Hour Categorical` + `Day Name`,
+  Difference ~ Group * Period + Tenure + Ln_notional + Capped + `Trade Hour Categorical` + `Day Name`,
   data = data)
 
 summary(did_model_advanced)
@@ -101,8 +98,7 @@ stargazer(did_model, did_model_advanced, type = "text",
           dep.var.caption = "Dependent variable: Difference",
           dep.var.labels.include = FALSE,
           digits = 4,
-          no.space = TRUE,
-          out = "reports/tables/per_phase_did_basic.txt")
+          no.space = TRUE)
 
 # Save the LaTeX output to a file
 summary_table <- stargazer(did_model, did_model_advanced, type = "text",
@@ -115,7 +111,7 @@ summary_table <- stargazer(did_model, did_model_advanced, type = "text",
                            dep.var.labels.include = FALSE,
                            digits = 4,
                            no.space = TRUE,
-                           out = "reports/tables/TABLE DiD (all phases).txt")
+                           out = "reports/tables/filtered_did_placebo.txt")
 
 # Run separate DiD for each phase: simple model
 phase_1_model <- lm(
@@ -174,8 +170,7 @@ stargazer(phase_1_model_adv, phase_2_model_adv, phase_3_model_adv,
             "Thursday",
             "Friday",
             "Group * Period"),
-          title = "By Phase Results: Advanced Model",
-          out = "reports/tables/per_phase_did.txt")
+          title = "By Phase Results: Advanced Model")
 
 # Plots
 # Group the data and get daily medians
