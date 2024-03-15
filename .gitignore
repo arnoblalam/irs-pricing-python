@@ -156,3 +156,4 @@ cython_debug/
 # Ignore data directory
 data/
 .Rproj.user
+.Rhistory
