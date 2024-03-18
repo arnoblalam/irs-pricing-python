@@ -43,6 +43,7 @@ data$Period <- as.factor(data$Period)
 # Convert the 'Capped', 'SEF', Trade Day and Trade Hour variables to factors
 data$Capped <- as.factor(data$Capped)
 data$SEF <- as.factor(data$SEF)
+data$Phase <- as.factor(data$Phase)
 data$`Day Name` <- factor(data$`Day Name`, levels = c("Wednesday", 
                                                       "Monday",
                                                       "Tuesday",
@@ -51,7 +52,7 @@ data$`Day Name` <- factor(data$`Day Name`, levels = c("Wednesday",
                                                       "Saturday",
                                                       "Sunday"))
 data$`Trade Hour Categorical` <- factor(data$`Trade Hour Categorical`, 
-                                        levels = c("Mid Day", 
+                                        levels = c("Mid-Day", 
                                                    "Morning", 
                                                    "Afternoon", 
                                                    "Off Hours"))
@@ -73,7 +74,7 @@ did_model <- lm(
 summary(did_model)
 
 did_model_advanced <- lm(
-  Difference ~ Group * Period + Tenure + Ln_notional + Capped + 
+  Difference ~ Group * Period + Phase + Tenure + Ln_notional + Capped + 
     `Trade Hour Categorical` + `Day Name`,
   data = data)
 
