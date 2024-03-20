@@ -1,0 +1,173 @@
+#!/usr/bin/env python3
+
+# Name: price_swaps_USD.py
+# Last Updated: 2024-03-03
+# Maintainer: Arnob L. Alam (arnoblalam@gmail.com)
+#
+# Description: This script prices interest rate swaps using QuantLib.
+
+import argparse
+import pandas as pd
+import numpy as np
+import QuantLib as ql
+from datetime import datetime
+import logging
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description='Price interest rate swaps using QuantLib')
+    parser.add_argument('transaction_file', help='Transaction data Excel file')
+    parser.add_argument('yield_curve_file', help='Yield curve data Excel file')
+    parser.add_argument('output_file', help='Output Excel file')
+    parser.add_argument('evaluation_date', help='Evaluation date (in format YYYY-MM-DD)')
+    parser.add_argument('--log_file', help='Optional log file', default=None)
+
+    return parser.parse_args()
+
+def read_data(transaction_file, yield_curve_file):
+    transactions_df = pd.read_excel(transaction_file)
+    yield_curve_df = pd.read_excel(yield_curve_file)
+    return transactions_df, yield_curve_df
+
+def parse_date(date_string):
+    formats = ["%m/%d/%Y", "%m/%d/%y"]
+
+    for date_format in formats:
+        try:
+            return ql.DateParser.parseFormatted(date_string, date_format)
+        except:
+            pass
+
+
+def build_helpers(yield_curve_df):
+    rate_helpers = []
+    for _, row in yield_curve_df.iterrows():
+        tenor, description, rate, source, update = row['Tenor'], row['Description'], row['Yield'], row['Source'], parse_date(row['Update'])
+
+        if 'BP000' in description:
+            rate_helpers.append(ql.DepositRateHelper(ql.QuoteHandle(ql.SimpleQuote(rate/100)), 
+                                                     ql.Period(tenor), 
+                                                     2, 
+                                                     ql.UnitedKingdom(), 
+                                                     ql.ModifiedFollowing, 
+                                                     False, 
+                                                     ql.Actual360()))
+        elif 'BPSW' in description:
+            rate_helpers.append(ql.SwapRateHelper(ql.QuoteHandle(ql.SimpleQuote(rate/100)), 
+                                                  ql.Period(tenor), 
+                                                  ql.UnitedKingdom(), 
+                                                  ql.Semiannual, 
+                                                  ql.ModifiedFollowing, 
+                                                  ql.Actual365Fixed(), 
+                                                  ql.GBPLibor(ql.Period('6M'))))
+    
+    return rate_helpers
+
+def build_yield_curve(rate_helpers, evaluation_date):
+    yield_curve = ql.PiecewiseFlatForward(evaluation_date, rate_helpers, ql.Actual365Fixed())
+    yield_curve.enableExtrapolation()
+    return yield_curve
+
+def price_swaps(transaction_df, yield_curve, index):
+    results = []
+    for _, row in transaction_df.iterrows():
+        try:
+            effective_date, maturity_date, rate_1, leg_1, rate_2, leg_2, currency, notional, payment_frequency_1, payment_frequency_2 = parse_date(row['Effective']), parse_date(row['Maturity']), row['Rate 1'], row['Leg 1'], row['Rate 2'], row['Leg 2'], row['Curr'], row['Not.'], row['PF 1'], row['PF 2']
+            if payment_frequency_1 == '1T' or payment_frequency_2 == '1T' or maturity_date <= effective_date:
+                continue
+            fixed_leg_frequency = ql.Period(payment_frequency_1 if leg_1 == 'FIXED' else payment_frequency_2)
+            float_leg_frequency = ql.Period(payment_frequency_1 if leg_1 != 'FIXED' else payment_frequency_2)
+
+            fixed_rate = rate_1 if leg_1 == 'FIXED' else rate_2
+            fixed_rate /= 100 if fixed_rate > 10 else 1
+
+            float_rate = rate_1 if leg_1 != 'FIXED' else rate_2
+            float_rate /= 100 if float_rate > 10 else 1
+
+            if pd.isnull(float_rate):
+                float_rate = 0
+
+            index = index.clone(ql.YieldTermStructureHandle(yield_curve))
+
+            swap_engine = ql.DiscountingSwapEngine(ql.YieldTermStructureHandle(yield_curve))
+
+            fixed_schedule = ql.Schedule(effective_date, 
+                                        maturity_date, 
+                                        fixed_leg_frequency, 
+                                        ql.UnitedKingdom(), 
+                                        ql.ModifiedFollowing, 
+                                        ql.ModifiedFollowing, 
+                                        ql.DateGeneration.Backward, 
+                                        True)
+            float_schedule = ql.Schedule(effective_date, 
+                                         maturity_date, 
+                                        float_leg_frequency, 
+                                        ql.UnitedKingdom(), 
+                                        ql.ModifiedFollowing, 
+                                        ql.ModifiedFollowing, 
+                                        ql.DateGeneration.Backward, 
+                                        True)
+            swap = ql.VanillaSwap(ql.VanillaSwap.Payer, 
+                                notional, 
+                                fixed_schedule, 
+                                fixed_rate/100, 
+                                ql.Actual365Fixed(), 
+                                float_schedule, 
+                                index, 
+                                float_rate/100, 
+                                index.dayCounter())
+            swap.setPricingEngine(swap_engine)
+            fair_rate = swap.fairRate()*100
+            difference = (fixed_rate - fair_rate)*100
+
+            row['Fair Rate'] = fair_rate
+            row['Difference'] = difference
+            results.append(row)
+
+        except Exception as e:
+            logging.exception(f"Error processing swap:\n{row}\nError: {str(e)}")
+            continue
+    
+    return pd.DataFrame(results)
+
+def main():
+    args = parse_arguments()
+
+    yield_curve_data = pd.read_excel(args.yield_curve_file)
+    transactions_data = pd.read_excel(args.transaction_file)
+    historical_fixings_data = pd.read_excel("data/raw/historical_fixings/GBP_historical_fixings.xlsx")
+    
+    evaluation_date_dt = datetime.strptime(args.evaluation_date, '%Y-%m-%d')
+    evaluation_date = ql.Date(evaluation_date_dt.day, evaluation_date_dt.month, evaluation_date_dt.year)
+    uk_calendar = ql.UnitedKingdom()
+    if not uk_calendar.isBusinessDay(evaluation_date):
+        evaluation_date = uk_calendar.adjust(evaluation_date)
+    ql.Settings.instance().evaluationDate = evaluation_date
+    
+    rate_helpers = build_helpers(yield_curve_data)
+    yield_curve = build_yield_curve(rate_helpers, evaluation_date)
+    
+    # Create the USD Libor 3M index
+    index = ql.GBPLibor(ql.Period('6M'), ql.YieldTermStructureHandle(yield_curve))
+    
+    # Add historical fixings to the index
+    for _, row in historical_fixings_data.iterrows():
+        fixing_date_dt = row['Date']
+        fixing = row['PX_ASK'] / 100  # Convert percentage to decimal
+
+        # fixing_date_dt = datetime.strptime(fixing_date_str, "%m/%d/%y")
+        ql_fixing_date = ql.Date(fixing_date_dt.day, fixing_date_dt.month, fixing_date_dt.year)
+
+        if ql_fixing_date <= evaluation_date:
+            index.addFixing(ql_fixing_date, fixing)
+
+
+    priced_swaps_df = price_swaps(transactions_data, yield_curve, index)
+    priced_swaps_df.to_excel(args.output_file, index=False)
+
+    if args.log_file:
+        with open(args.log_file, 'a') as log_file:
+            log_file.write(f"Successfully processed swaps and saved output to {args.output_file}\n")
+
+if __name__ == "__main__":
+    main()
