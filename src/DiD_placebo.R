@@ -4,20 +4,18 @@
 # Last Updated: 2023-06-16
 # Maintainer: Arnob L. Alam (arnoblalam@gmail.com)
 #
-# Description: This script performs a difference-in-differences (DID) regression analysis for
-# the effect of central clearing mandates on interest rate swaps pricing.  It has two models
-# - a basic model with no controls and an advanced model with additional control variables.
-# This version of the script also includes separate DiD regressions for each phase and plots
-# and uses the log ntionals as a control variable.
+# Description: This script performs a difference-in-differences (DiD) 
+#regression analysis for the effect of central clearing mandates on interest 
+# rate swaps pricing.  It has two models - a basic model with no controls and
+# an advanced model with additional control variables. This version of the 
+# script also includes separate DiD regressions for each phase and plots
+# and uses the log nationals as a control variable.
 
 # Load necessary packages
 library(tidyverse)
 library(readxl)
 library(stargazer)
 library(stringr)
-library(lubridate)
-library(ggplot2)
-library(hrbrthemes)
 
 # Read the data from the Excel file
 data <- read_excel("data/pricing/USD_CAD_combined_placebo.xlsx",
@@ -94,10 +92,11 @@ stargazer(did_model, did_model_advanced, type = "text",
                                "Thursday",
                                "Friday",
                                "Group * Period"),
-          dep.var.caption = "Dependent variable: Difference",
+          dep.var.caption = "Dependent variable: Premium",
           dep.var.labels.include = FALSE,
           digits = 4,
-          no.space = TRUE)
+          no.space = TRUE,
+          out = "reports/tables/placebo_did.txt")
 
 # Save the LaTeX output to a file
 summary_table <- stargazer(did_model, did_model_advanced, type = "text",
@@ -109,8 +108,7 @@ summary_table <- stargazer(did_model, did_model_advanced, type = "text",
                            dep.var.caption = "Dependent variable: Difference",
                            dep.var.labels.include = FALSE,
                            digits = 4,
-                           no.space = TRUE,
-                           out = "reports/tables/filtered_did_placebo.txt")
+                           no.space = TRUE)
 
 # Run separate DiD for each phase: simple model
 phase_1_model <- lm(
