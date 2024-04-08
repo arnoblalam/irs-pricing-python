@@ -1,0 +1,42 @@
+#Scrap
+
+# let's look at all the Canadian contracts
+data_CAD = data[data["Curr"] == "CAD"]
+# Let's filter the data around June 2013 policy change
+data_CAD = data_CAD[(data_CAD["Trade Time"]> "2013-05-01") & (data_CAD["Trade Time"]< "2013-07-01")
+                    & (data_CAD["T"] == "1Y")]
+data_CAD = data_CAD.sort_values('Trade Time')
+p_CAD = data_CAD["Rate 1"].apply(lambda x: log(x))
+data_CAD["log_return"] = p_CAD.diff()
+# let's look at all the Canadian contracts
+data_USD = data[data["Curr"] == "USD"]
+# Let's filter the data around June 2013 policy change
+data_USD = data_USD[(data_USD["Trade Time"]> "2013-05-01") & (data_USD["Trade Time"]< "2013-07-01")
+                    & (data_USD["T"] == "1Y") & (data_USD["Rate 1"] > 0)]
+data_USD = data_USD.sort_values('Trade Time')
+p_USD = data_USD["Rate 1"].apply(lambda x: log(x))
+data_USD["log_return"] = p_USD.diff()
+data_USD["Trade Time"].dt.date.value_counts().reset_index().sort_values("index")
+cad_std = data_CAD.groupby(data_CAD["Trade Time"].dt.date)['log_return'].std()
+usd_std = data_USD.groupby(data_USD["Trade Time"].dt.date)['log_return'].std()
+# Plotting
+plt.figure(figsize=(10, 6))
+cad_std.plot(label='Canada', legend=True)
+usd_std.plot(label='USA', legend=True)
+plt.title('Daily Standard Deviation of log_return for US and Canada')
+plt.xlabel('Trade Time')
+plt.ylabel('Standard Deviation of log_return')
+plt.show()
+data_combined = pd.concat([data_CAD.assign(country='CAD'), data_USD.assign(country='USD')])
+data_combined['post_policy'] = (data_combined['Trade Time'].dt.date > pd.to_datetime('2013-06-10')).astype(int)
+data_combined['treatment'] = (data_combined['country'] == 'USD').astype(int)
+data_combined['interaction'] = data_combined['post_policy'] * data_combined['treatment']
+data_combined['daily_std'] = data_combined.groupby(['country', data_combined['Trade Time'].dt.date])['log_return'].transform('std')
+data_combined = data_combined.dropna(subset=['daily_std'])
+
+X = data_combined[['post_policy', 'treatment', 'interaction']]
+X = sm.add_constant(X)  # Adds a constant term to the predictors
+Y = data_combined['daily_std']
+
+model = sm.OLS(Y, X).fit()
+print(model.summary())
