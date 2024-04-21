@@ -85,4 +85,5 @@ stargazer(model, type = "text",
           dep.var.caption = "Dependent variable: Realized Volatility",
           dep.var.labels.include = FALSE,
           digits = 4,
-          no.space = TRUE)
+          no.space = TRUE,
+          out = "reports/tables/volatility.txt")
