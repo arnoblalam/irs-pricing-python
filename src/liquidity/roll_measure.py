@@ -47,21 +47,28 @@ def apply_roll_measure(group):
     roll_measure, roll_measure_bps = calculate_roll_measure(prices)
     return pd.Series({'Roll Measure': roll_measure, 'Roll Measure (bps)': roll_measure_bps})
 
-def main(input_file, output_file, tenor):
+def main(input_file, output_file, tenor, currency):
     # Read data and create columns for tenor
     df = pd.read_excel(input_file)
     df['Tenor'] = np.round((df['Maturity'] - df['Effective']).dt.days / 365.25)
     df['Trade Date'] = df['Trade Time'].dt.date
 
     # Filter data
+    if currency == 'CAD':
+        index = 'CAD-BA-CDOR'
+        Curr = 'CAD'
+    else:
+        index = 'USD-LIBOR-BBA'
+        Curr = 'USD'
     filtered_df = df[
         (df['Type'] == 'IRS Fix-Float') &
         (df['CD'] == 'TR') &
-        ((df['Leg 1'] == 'FIXED') | (df['Leg 1'] == 'CAD-BA-CDOR')) &
-        (df['Leg 2'].isin(['FIXED', 'CAD-BA-CDOR', ''])) &
+        ((df['Leg 1'] == 'FIXED') | (df['Leg 1'] == index)) &
+        (df['Leg 2'].isin(['FIXED', index, ''])) &
         (df['PF 1'] != '1T') &
         (df['PF 2'] != '1T') &
-        (df['Curr'] == 'CAD') &
+        (df['Curr'] == Curr) &
+        (df['Tenor'] == tenor) &
         (df['Othr Pmnt'].isnull()) &
         (df['Rate 2'].isnull())
     ]
@@ -78,7 +85,10 @@ if __name__ == "__main__":
     parser.add_argument('input_file', type=str, help='Path to the input Excel file')
     parser.add_argument('output_file', type=str, help='Path to the output Excel file')
     parser.add_argument('tenor', type=float, help='Tenor value for filtering the dataset')
+    parser.add_argument('currency', default='CAD', 
+                        help='Currency value for filtering the dataset')
+
 
     args = parser.parse_args()
 
-    main(args.input_file, args.output_file, args.tenor)
+    main(args.input_file, args.output_file, args.tenor, args.currency)
