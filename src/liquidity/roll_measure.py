@@ -52,6 +52,9 @@ def main(input_file, output_file, tenor, currency):
     df = pd.read_excel(input_file)
     df['Tenor'] = np.round((df['Maturity'] - df['Effective']).dt.days / 365.25)
     df['Trade Date'] = df['Trade Time'].dt.date
+    # Calculate the difference in days between Effective date and Trade Date
+    df['Effective_Trade_Diff'] = (df['Effective'] - df['Trade Time']).dt.days
+
 
     # Filter data
     if currency == 'CAD':
@@ -70,7 +73,8 @@ def main(input_file, output_file, tenor, currency):
         (df['Curr'] == Curr) &
         (df['Tenor'] == tenor) &
         (df['Othr Pmnt'].isnull()) &
-        (df['Rate 2'].isnull())
+        (df['Rate 2'].isnull()) &
+        (df['Effective_Trade_Diff'] <= 31)  # Exclude observations where the Effective date is more than 31 days after the Trade Date
     ]
     filtered_df = filtered_df.sort_values('Trade Time')
 
