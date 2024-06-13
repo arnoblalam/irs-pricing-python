@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+
+src/liquidity/amihud.py data/liquidity/USD_20130311-20130324.xlsx data/liquidity/Amihud/USD_Phase1_post_10.xlsx 10 USD
+src/liquidity/amihud.py data/liquidity/USD_20130223-20130310.xlsx data/liquidity/Amihud/USD_Phase1_pre_10.xlsx 10 USD
+src/liquidity/amihud.py data/liquidity/USD_20130526-20130609.xlsx data/liquidity/Amihud/USD_Phase2_pre_10.xlsx 10 USD
+src/liquidity/amihud.py data/liquidity/USD_20130610-20130623.xlsx data/liquidity/Amihud/USD_Phase2_post_10.xlsx 10 USD
+src/liquidity/amihud.py data/liquidity/USD_20130824-20130908.xlsx data/liquidity/Amihud/USD_Phase3_pre_10.xlsx 10 USD
+src/liquidity/amihud.py data/liquidity/USD_20130909-20130922.xlsx data/liquidity/Amihud/USD_Phase3_post_10.xlsx 10 USD
+src/liquidity/amihud.py data/liquidity/USD_20130909-20130922.xlsx data/liquidity/Amihud/USD_Phase3_post_2.xlsx 2 USD
+src/liquidity/amihud.py data/liquidity/USD_20130824-20130908.xlsx data/liquidity/Amihud/USD_Phase3_pre_2.xlsx 2 USD
+src/liquidity/amihud.py data/liquidity/USD_20130610-20130623.xlsx data/liquidity/Amihud/USD_Phase2_post_2.xlsx 2 USD
+src/liquidity/amihud.py data/liquidity/USD_20130526-20130609.xlsx data/liquidity/Amihud/USD_Phase2_pre_2.xlsx 2 USD
+src/liquidity/amihud.py data/liquidity/USD_20130223-20130310.xlsx data/liquidity/Amihud/USD_Phase1_pre_2.xlsx 2 USD
+src/liquidity/amihud.py data/liquidity/USD_20130311-20130324.xlsx data/liquidity/Amihud/USD_Phase1_post_2.xlsx 2 USD
+src/liquidity/amihud.py data/liquidity/USD_20130311-20130324.xlsx data/liquidity/Amihud/USD_Phase1_post_5.xlsx 5 USD
+src/liquidity/amihud.py data/liquidity/USD_20130223-20130310.xlsx data/liquidity/Amihud/USD_Phase1_pre_5.xlsx 5 USD
+src/liquidity/amihud.py data/liquidity/USD_20130526-20130609.xlsx data/liquidity/Amihud/USD_Phase2_pre_5.xlsx 5 USD
+src/liquidity/amihud.py data/liquidity/USD_20130610-20130623.xlsx data/liquidity/Amihud/USD_Phase2_post_5.xlsx 5 USD
+src/liquidity/amihud.py data/liquidity/USD_20130824-20130908.xlsx data/liquidity/Amihud/USD_Phase3_pre_5.xlsx 5 USD
+src/liquidity/amihud.py data/liquidity/USD_20130909-20130922.xlsx data/liquidity/Amihud/USD_Phase3_post_5.xlsx 5 USD
+
+src/liquidity/amihud.py data/liquidity/CAD_20130311-20130324.xlsx data/liquidity/Amihud/CAD_Phase1_post_10.xlsx 10 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130223-20130310.xlsx data/liquidity/Amihud/CAD_Phase1_pre_10.xlsx 10 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130526-20130609.xlsx data/liquidity/Amihud/CAD_Phase2_pre_10.xlsx 10 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130610-20130623.xlsx data/liquidity/Amihud/CAD_Phase2_post_10.xlsx 10 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130824-20130908.xlsx data/liquidity/Amihud/CAD_Phase3_pre_10.xlsx 10 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130909-20130922.xlsx data/liquidity/Amihud/CAD_Phase3_post_10.xlsx 10 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130909-20130922.xlsx data/liquidity/Amihud/CAD_Phase3_post_2.xlsx 2 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130824-20130908.xlsx data/liquidity/Amihud/CAD_Phase3_pre_2.xlsx 2 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130610-20130623.xlsx data/liquidity/Amihud/CAD_Phase2_post_2.xlsx 2 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130526-20130609.xlsx data/liquidity/Amihud/CAD_Phase2_pre_2.xlsx 2 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130223-20130310.xlsx data/liquidity/Amihud/CAD_Phase1_pre_2.xlsx 2 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130311-20130324.xlsx data/liquidity/Amihud/CAD_Phase1_post_2.xlsx 2 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130311-20130324.xlsx data/liquidity/Amihud/CAD_Phase1_post_5.xlsx 5 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130223-20130310.xlsx data/liquidity/Amihud/CAD_Phase1_pre_5.xlsx 5 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130526-20130609.xlsx data/liquidity/Amihud/CAD_Phase2_pre_5.xlsx 5 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130610-20130623.xlsx data/liquidity/Amihud/CAD_Phase2_post_5.xlsx 5 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130824-20130908.xlsx data/liquidity/Amihud/CAD_Phase3_pre_5.xlsx 5 CAD
+src/liquidity/amihud.py data/liquidity/CAD_20130909-20130922.xlsx data/liquidity/Amihud/CAD_Phase3_post_5.xlsx 5 CAD
