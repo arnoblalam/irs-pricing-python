@@ -22,7 +22,7 @@ def calculate_average_daily_return(prices):
     delta_log_prices = np.diff(log_prices)
     
     # Calculate the average of the first difference
-    average_daily_return = np.mean(delta_log_prices)
+    average_daily_return = np.abs(np.mean(delta_log_prices))
     
     return average_daily_return
 
@@ -68,6 +68,8 @@ def main(input_file, output_file, tenor, currency):
     df = pd.read_excel(input_file)
     df['Tenor'] = np.round((df['Maturity'] - df['Effective']).dt.days / 365.25)
     df['Trade Date'] = df['Trade Time'].dt.date
+    # Calculate the difference in days between Effective date and Trade Date
+    df['Effective_Trade_Diff'] = (df['Effective'] - df['Trade Time']).dt.days
 
     # Filter data
     if currency == 'CAD':
@@ -88,7 +90,8 @@ def main(input_file, output_file, tenor, currency):
         (df['Othr Pmnt'].isnull()) &
         (df['Rate 2'].isnull()) &
         (df['Rate 1'] > -10)&
-        (df['Rate 1'] < 10)
+        (df['Rate 1'] < 10) &
+        (df['Effective_Trade_Diff'] <= 31)  # Exclude observations where the Effective date is more than 31 days after the Trade Date
     ]
     filtered_df = filtered_df.sort_values('Trade Time')
 
