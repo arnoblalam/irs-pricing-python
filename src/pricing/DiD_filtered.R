@@ -8,7 +8,7 @@
 # the effect of central clearing mandates on interest rate swaps pricing.  It has two models
 # - a basic model with no controls and an advanced model with additional control variables.
 # This version of the script also includes separate DiD regressions for each phase and plots
-# and uses the log ntionals as a control variable.
+# and uses the log notionals as a control variable.
 
 # Load necessary packages
 library(tidyverse)
