@@ -48,7 +48,8 @@ stargazer(did_model, did_model_advanced, type = "text",
           no.space = TRUE)
 
 # Save the LaTeX output to a file
-summary_table <- stargazer(did_model, did_model_advanced, type = "latex",
+summary_table <- stargazer(did_model, did_model_advanced, type = "html",
+                           out = "reports/tables/TABLE DiD (all phases).html",
                            title = "Difference-in-Differences Regression Results",
                            align = TRUE,
                            column.labels = c("Basic Model", "Advanced Model"),
