@@ -106,7 +106,7 @@ stargazer(did_model, did_model_advanced, type = "text",
           out = "reports/tables/per_phase_did_basic.txt")
 
 # Save the LaTeX output to a file
-summary_table <- stargazer(did_model, did_model_advanced, type = "text",
+stargazer(did_model, did_model_advanced, type = "html",
                            title = "Difference-in-Differences Regression Results",
                            align = TRUE,
                            column.labels = c("Basic Model", "Advanced Model"),
@@ -116,7 +116,7 @@ summary_table <- stargazer(did_model, did_model_advanced, type = "text",
                            dep.var.labels.include = FALSE,
                            digits = 4,
                            no.space = TRUE,
-                           out = "reports/tables/TABLE DiD (all phases).txt")
+                           out = "reports/tables/TABLE DiD (all phases).html")
 
 # Run separate DiD for each phase: simple model
 phase_1_model <- lm(
