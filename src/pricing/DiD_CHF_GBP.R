@@ -78,7 +78,8 @@ summary(did_model_advanced)
 
 
 # Create the summary table with both the basic and advanced DID regression models
-stargazer(did_model, did_model_advanced, type = "latex",
+stargazer(did_model, did_model_advanced, 
+          type = "html",
           title = "Difference-in-Differences Regression Results (GBP vs. CHF)",
           align = TRUE,
           column.labels = c("Basic Model", "Advanced Model"),
@@ -94,12 +95,13 @@ stargazer(did_model, did_model_advanced, type = "latex",
                                "Tuesday",
                                "Thursday",
                                "Friday",
-                               "Group * Period"),
+                               "Group * Period",
+                               "Constant"),
           dep.var.caption = "Dependent variable: Premium",
           dep.var.labels.include = FALSE,
           digits = 4,
           no.space = TRUE,
-          out = "reports/tables/main_DiD_GBP_CHF.tex")
+          out = "reports/tables/main_DiD_GBP_CHF.html")
 
 # Run separate DiD for each phase: simple model
 phase_1_model <- lm(

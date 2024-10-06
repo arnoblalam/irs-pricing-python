@@ -52,7 +52,7 @@ data$`Day Name` <- factor(data$`Day Name`, levels = c("Wednesday",
                                                       "Saturday",
                                                       "Sunday"))
 data$`Trade Hour Categorical` <- factor(data$`Trade Hour Categorical`, 
-                                        levels = c("Mid-Day", 
+                                        levels = c("Mid Day", 
                                                    "Morning", 
                                                    "Afternoon", 
                                                    "Off Hours"))
@@ -74,7 +74,7 @@ did_model <- lm(
 summary(did_model)
 
 did_model_advanced <- lm(
-  Difference ~ Group * Period + Phase + Tenure + Ln_notional + Capped + 
+  Difference ~ Group * Period + Tenure + Ln_notional + Capped + SEF +
     `Trade Hour Categorical` + `Day Name`,
   data = data)
 
@@ -82,7 +82,7 @@ summary(did_model_advanced)
 
 
 # Create the summary table with both the basic and advanced DID regression models
-stargazer(did_model, did_model_advanced, type = "text",
+stargazer(did_model, did_model_advanced, type = "html",
           title = "Difference-in-Differences Regression Results",
           align = TRUE,
           column.labels = c("Basic Model", "Advanced Model"),
@@ -90,7 +90,8 @@ stargazer(did_model, did_model_advanced, type = "text",
                                "Period",
                                "Tenor",
                                "Log Notional", 
-                               "Capped", 
+                               "Capped",
+                               "SEF",
                                "Morning Session", 
                                "Afternoon Session", 
                                "Off Hours",
@@ -98,25 +99,26 @@ stargazer(did_model, did_model_advanced, type = "text",
                                "Tuesday",
                                "Thursday",
                                "Friday",
-                               "Group * Period"),
-          dep.var.caption = "Dependent variable: Difference",
+                               "Group * Period",
+                               "Constant"),
+          dep.var.caption = "Dependent variable: Premium",
           dep.var.labels.include = FALSE,
           digits = 4,
           no.space = TRUE,
-          out = "reports/tables/per_phase_did_basic.txt")
+          out = "reports/tables/TABLE DiD (all phases).html")
 
 # Save the LaTeX output to a file
-stargazer(did_model, did_model_advanced, type = "html",
-                           title = "Difference-in-Differences Regression Results",
-                           align = TRUE,
-                           column.labels = c("Basic Model", "Advanced Model"),
-                           covariate.labels = c("Group", "Period", "Group * Period",
-                                                "Maturity", "Not.", "Capped", "SEF", "Trade Hour"),
-                           dep.var.caption = "Dependent variable: Difference",
-                           dep.var.labels.include = FALSE,
-                           digits = 4,
-                           no.space = TRUE,
-                           out = "reports/tables/TABLE DiD (all phases).html")
+# stargazer(did_model, did_model_advanced, type = "html",
+#                            title = "Difference-in-Differences Regression Results",
+#                            align = TRUE,
+#                            column.labels = c("Basic Model", "Advanced Model"),
+#                            covariate.labels = c("Group", "Period", "Group * Period",
+#                                                 "Maturity", "Not.", "Capped", "SEF", "Trade Hour"),
+#                            dep.var.caption = "Dependent variable: Difference",
+#                            dep.var.labels.include = FALSE,
+#                            digits = 4,
+#                            no.space = TRUE,
+#                            out = "reports/tables/TABLE DiD (all phases).html")
 
 # Run separate DiD for each phase: simple model
 phase_1_model <- lm(
@@ -132,6 +134,8 @@ phase_3_model <- lm(
   data = data %>% filter(Phase == "Phase 3"))
 
 stargazer(phase_1_model, phase_2_model, phase_3_model, 
+          dep.var.caption = "Dependent variable: Premium",
+          dep.var.labels.include = FALSE,
           type = "text",
           align = TRUE,
           column.labels = c(
@@ -141,7 +145,8 @@ stargazer(phase_1_model, phase_2_model, phase_3_model,
           covariate.labels = c(
             "Group",
             "Period",
-            "Group * Period"),
+            "Group * Period",
+            "Constant"),
           title = "By Phase Results: Simple Model")
 
 # Run separate DiD for each phase: adv model
@@ -158,7 +163,9 @@ phase_3_model_adv <- lm(
   data = data %>% filter(Phase == "Phase 3"))
 
 stargazer(phase_1_model_adv, phase_2_model_adv, phase_3_model_adv, 
-          type = "text",
+          dep.var.caption = "Dependent variable: Premium",
+          dep.var.labels.include = FALSE,
+          type = "html",
           align = TRUE,
           column.labels = c("Phase 1", "Phase 2", "Phase 3"),
           covariate.labels = c(
@@ -176,7 +183,7 @@ stargazer(phase_1_model_adv, phase_2_model_adv, phase_3_model_adv,
             "Friday",
             "Group * Period"),
           title = "By Phase Results: Advanced Model",
-          out = "reports/tables/per_phase_did.txt")
+          out = "reports/tables/per_phase_did.html")
 
 # Plots
 # Group the data and get daily medians

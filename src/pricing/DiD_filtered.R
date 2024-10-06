@@ -16,7 +16,7 @@ library(readxl)
 library(stargazer)
 
 # Read the data from the Excel file
-data <- read_excel("data/filtered_data.xlsx", 
+data <- read_excel("data/pricing/filtered_data.xlsx", 
                    col_types = c("numeric", "text", "date", "text", 
                                  "numeric", "text", "text", "date", 
                                  "date", "numeric", "text", "numeric", 

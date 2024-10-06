@@ -75,7 +75,8 @@ summary(did_model_advanced)
 
 # Create the summary table with both the basic and advanced DID
 # regression models
-stargazer(did_model, did_model_advanced, type = "text",
+stargazer(did_model, did_model_advanced, 
+          type = "html",
           title = "Difference-in-Differences Regression Results",
           align = TRUE,
           column.labels = c("Basic Model", "Advanced Model"),
@@ -96,7 +97,7 @@ stargazer(did_model, did_model_advanced, type = "text",
           dep.var.labels.include = FALSE,
           digits = 4,
           no.space = TRUE,
-          out = "reports/tables/placebo_did.txt")
+          out = "reports/tables/placebo_did.html")
 
 # Save the LaTeX output to a file
 summary_table <- stargazer(did_model, did_model_advanced, type = "text",
