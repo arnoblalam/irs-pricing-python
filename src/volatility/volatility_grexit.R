@@ -77,7 +77,7 @@ model <- lm(std_return_1 ~ Grp* period, data = new_data)
 summary(model)
 
 library(stargazer)
-stargazer(model, type = "html",
+stargazer(model, type = "text",
           title = "Volatility Regression",
           align = TRUE,
           covariate.labels = c("Group", 
@@ -86,5 +86,5 @@ stargazer(model, type = "html",
           dep.var.caption = "Dependent variable: Realized Volatility",
           dep.var.labels.include = FALSE,
           digits = 4,
-          no.space = TRUE,
-          out = "reports/tables/volatility.html")
+          no.space = TRUE)#,
+          #out = "reports/tables/volatility.txt")
