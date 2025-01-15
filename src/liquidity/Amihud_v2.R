@@ -107,4 +107,4 @@ usd_export <- do.call(bind_rows, usd_res)
 cad_export <- do.call(bind_rows, cad_res)
 
 my_export <- bind_rows(usd_export, cad_export)
-xlsx::write.xlsx(my_export %>% ungroup(), "data/liquidity/Amihud/USD_CAD.xlsx")
+xlsx::write.xlsx(my_export %>% ungroup(), "data/liquidity/Amihud/Amihd_Measure_2025_14_01.xlsx")
