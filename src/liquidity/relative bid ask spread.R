@@ -24,7 +24,7 @@ model <- lm(`Relative Spread` ~ treatment * post_treatment + factor(Tenor), data
 
 
 # Generate publication-quality table using stargazer
-stargazer(model, type = "html", out = "reports/tables/realized bid ask spread.html",
+stargazer(model, type = "html", out = "reports/tables/realized_bid_ask spread_20250119.html",
           title = "Relative Bid-Ask Spread DiD Analysis", 
           dep.var.labels = "Relative Spread", 
           covariate.labels = c("Group", "Period", 
