@@ -35,7 +35,7 @@ apply_default_filters <- function(df, currency = "USD") {
       Not. >= 0.5E6,
       is.na(`Rate 2`),
       `Rate 1` > 0,
-      difftime(Effective, `Trade Time`, units = "days") < 31,
+      difftime(Effective, `Trade Time`, units = "days") < 93,
       !(wday(`Trade Time`, label = TRUE) %in% c("Sun", "Sat"))
     )
 }
@@ -43,7 +43,8 @@ apply_default_filters <- function(df, currency = "USD") {
 calculate_amihud_measure <- function(df) {
   tenors <- c("2Y", "5Y", "10Y")
   df %>%
-    group_by(Tenor = T, `Trade Date` = date(`Trade Time`)) %>%
+    group_by(Tenor = `T`, `Trade Date` = date(`Trade Time`)) %>%
+    arrange(`Trade Time`) %>%
     mutate(`Log Rate 1` = log(`Rate 1`),
            `Not. in Millions` = Not. / 1E6) %>%
     filter(Tenor %in% tenors) %>%
@@ -107,4 +108,4 @@ usd_export <- do.call(bind_rows, usd_res)
 cad_export <- do.call(bind_rows, cad_res)
 
 my_export <- bind_rows(usd_export, cad_export)
-xlsx::write.xlsx(my_export %>% ungroup(), "data/liquidity/Amihud/Amihd_Measure_2025_14_01.xlsx")
+xlsx::write.xlsx(my_export %>% ungroup(), "data/liquidity/Amihud/Amihud_Measure_20250118.xlsx")
