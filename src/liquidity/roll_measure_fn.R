@@ -50,9 +50,7 @@ read_data <- function(filename, currency = "USD") {
         Maturity = mdy(Maturity),
         `Trade Time` = mdy_hms(`Trade Time`, tz = "America/New_York")
       )
-  }
-  
-  else {
+  } else {
     df_ <- df
   }
   df_ %>%
@@ -71,7 +69,8 @@ read_data <- function(filename, currency = "USD") {
       `PF 1` != "1T",
       `PF 2` != "1T",
       is.na(`Othr Pmnt`),
-      is.na(`Rate 2`)
+      is.na(`Rate 2`),
+      (as_date(Effective) - as_date(`Trade Time`)) < 93
     )
 }
 
