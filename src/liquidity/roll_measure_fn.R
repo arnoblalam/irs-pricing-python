@@ -58,7 +58,8 @@ read_data <- function(filename, currency = "USD") {
     mutate(
       Clr = if_else(Clr == "C", 1, 0, missing = 0),
       SEF = if_else(SEF == "ON", 1, 0, missing = 0),
-      Capped = if_else(Capped == "+", 1, 0, missing = 0)
+      Capped = if_else(Capped == "+", 1, 0, missing = 0),
+      `Rate 1` = if_else(`Rate 1` <= 10, `Rate 1`, `Rate 1`/100) #if rates are in BPS, convert to percentages
     ) %>%
     filter(
       Type == "IRS Fix-Float",

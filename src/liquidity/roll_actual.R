@@ -99,7 +99,7 @@ combined <-
             pre_2_usd_pretrend_1, pre_2_usd_pretrend_2, pre_2_cad_pretrend_1, pre_2_cad_pretrend_2, pre_2_usd, pre_2_cad, post_2_usd, post_2_cad,
             pre_3_usd_pretrend_1, pre_3_usd_pretrend_2, pre_3_cad_pretrend_1, pre_3_cad_pretrend_2, pre_3_usd, pre_3_cad, post_3_usd, post_3_cad) #%>%
   #write_csv("data/processed/liqudity/phase_1.csv")
-writexl::write_xlsx(combined, "data/liquidity/Roll/USD_CAD_Roll_20250118.xlsx")
+writexl::write_xlsx(combined, "data/liquidity/Roll/USD_CAD_Roll_20250119.xlsx")
 
 # combined_1 <- 
 #   pre_1_usd %>% 
