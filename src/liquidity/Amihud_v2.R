@@ -1,5 +1,6 @@
 library(tidyverse)
 library(readxl)
+library(writexl)
 library(lubridate)
 
 apply_default_filters <- function(df, currency = "USD") {
@@ -108,4 +109,4 @@ usd_export <- do.call(bind_rows, usd_res)
 cad_export <- do.call(bind_rows, cad_res)
 
 my_export <- bind_rows(usd_export, cad_export)
-xlsx::write.xlsx(my_export %>% ungroup(), "data/liquidity/Amihud/Amihud_Measure_20250118.xlsx")
+writex(my_export %>% ungroup(), "data/liquidity/Amihud/Amihud_Measure_20250119.xlsx")
