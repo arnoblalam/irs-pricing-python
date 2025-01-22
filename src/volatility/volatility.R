@@ -1,6 +1,7 @@
 # Load necessary libraries
+library(tidyverse)
 library(readxl)
-library(dplyr)
+library(writexl)
 library(lubridate)
 library(broom)
 library(stargazer)
@@ -31,7 +32,7 @@ data <- read_excel('data/volatility/combined_trade_data.xlsx')
 # Convert 'Effective', 'Maturity', and 'Trade Time' columns to datetime format
 data$Effective <- ymd(data$Effective)
 data$Maturity <- ymd(data$Maturity)
-data$`Trade Time` <- ymd_hms(data$`Trade Time`)
+data$`Trade Time` <- ymd_hms(data$`Trade Time`, tz = "America/New_York")
 
 # Add some additional columns
 data$Trade_Date <- as.Date(data$`Trade Time`)
@@ -52,7 +53,9 @@ data_filtered <- data %>%
          CD == 'TR',
          `Leg 2` %in% c('USD-LIBOR-BBA', 'CAD-BA-CDOR'),
          Curr %in% c('USD', 'CAD'),
-         (Effective- Trade_Date) <= 30,
+         (Effective- Trade_Date) <= 92,
+         is.na(`Rate 2`),
+         is.na(`Othr Pmnt`),
          wday(`Trade Time`, week_start = 1) < 6,
          date(`Trade Time`) != mdy('09022013'),
          date(`Trade Time`) != mdy('05272013'),
@@ -68,23 +71,24 @@ new_data <- data_filtered %>%
   summarize(std_return_1 = sd(return_1, na.rm = TRUE)) %>%
   ungroup()
 
+write_xlsx(new_data, "data/volatility/irs_fix_float_volatility_20250121.xlsx")
 # Rename the column and prepare for regression
-new_data$Grp <- ifelse(new_data$Curr == 'USD', 1, ifelse(new_data$Curr == 'CAD', 0, -1))
-new_data$period <- sapply(new_data$Trade_Date, in_period)
-new_data$interaction <- new_data$Grp * new_data$period
-
-model <- lm(std_return_1 ~ Grp* period, data = new_data)
-summary(model)
-
-library(stargazer)
-stargazer(model, type = "html",
-          title = "Volatility Regression",
-          align = TRUE,
-          covariate.labels = c("Group", 
-                               "Period",
-                               "Group * Period"),
-          dep.var.caption = "Dependent variable: Realized Volatility",
-          dep.var.labels.include = FALSE,
-          digits = 4,
-          no.space = TRUE,
-          out = "reports/tables/volatility.html")
+# new_data$Grp <- ifelse(new_data$Curr == 'USD', 1, ifelse(new_data$Curr == 'CAD', 0, -1))
+# new_data$period <- sapply(new_data$Trade_Date, in_period)
+# new_data$interaction <- new_data$Grp * new_data$period
+# 
+# model <- lm(std_return_1 ~ Grp* period, data = new_data)
+# summary(model)
+# 
+# library(stargazer)
+# stargazer(model, type = "html",
+#           title = "Volatility Regression",
+#           align = TRUE,
+#           covariate.labels = c("Group", 
+#                                "Period",
+#                                "Group * Period"),
+#           dep.var.caption = "Dependent variable: Realized Volatility",
+#           dep.var.labels.include = FALSE,
+#           digits = 4,
+#           no.space = TRUE,
+#           out = "reports/tables/volatility.html")
