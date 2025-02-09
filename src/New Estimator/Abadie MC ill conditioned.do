@@ -1,4 +1,4 @@
-capture program drop mc_abadie
+	capture program drop mc_abadie
 program define mc_abadie, rclass
 
     // 0. Clear and set obs
