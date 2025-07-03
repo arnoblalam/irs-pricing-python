@@ -25,18 +25,29 @@ fix_names <- function(df) {
 filter_df <- function(df) {
   # Filter out dates
   dates_to_exclude <- as.Date(c(
+    "2013-01-26",
     "2013-01-27",
     "2013-02-02",
     "2013-02-03",
     "2013-02-09",
     "2013-02-10",
+    "2013-02-16",
+    "2013-02-17",
     "2013-02-18"
   ))
   df %>% 
     filter(!(as.Date(`Trade Time`) %in% dates_to_exclude)) %>%
-  # Filter out zero notional
     filter(Notional > 0) %>%
-    filter(`Trade Delay` <= 92)
+    filter(`Trade Delay` < 93) %>% 
+    filter(Type == "IRS Fix-Float") %>%
+    filter(CD == "TR") %>% 
+    filter(`Leg 1` == "FIXED") %>%
+    filter(`Leg 2` %in% c("USD-LIBOR-BBA", "CAD-BA-CDOR", "GBP-LIBOR-BBA", "CHF-LIBOR-BBA")) %>%
+    filter(`PF 1` != "1T") %>% 
+    filter(`PF 2` != "1T") %>%
+    filter(is.na(`Othr Pmnt`))
+  
+    
 }
 
 # Mutate some columns
@@ -58,7 +69,7 @@ df_2y <- readxl::read_excel("data/pricing/two year contracts pre-trend.xlsx") %>
   fix_columns()
 
 # 5-year contracts
-df_5y <- readxl::read_excel("data/pricing/five year contract pretrend.xlsx") %>%
+df_5y <- readxl::read_excel("data/pricing/five year contract pre-trend.xlsx") %>%
   fix_names() %>%
   filter_df() %>%
   fix_columns()
