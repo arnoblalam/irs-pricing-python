@@ -64,28 +64,42 @@ program define mc_abadie, rclass
     return scalar att_gme   = ATT_gme
 	return scalar did_trad  = did_trad
 	
+	// Compute the true ATT in this sample
+    gen double true_effect = 1.5 + 0.5*X1
+    quietly summarize true_effect if D==1
+    scalar this_true_att = r(mean)
+    return scalar true_att_mc = this_true_att
+	
 
 end
+
+quietly summarize true_att
+local mean_true = r(mean)
 
 
 simulate att_logit = r(att_logit) ///
          att_gme   = r(att_gme) ///
-		 att_did = r(did_trad), ///
+		 att_did = r(did_trad) ///
+		 true_att =r(true_att_mc), ///
          reps(5000) nodots: mc_abadie
 
+quietly summarize true_att
+local mean_true = r(mean)
+
+
 twoway (kdensity att_gme, range(0 4)) ///
-	(kdensity att_logit, range(0 4))  ///
-	(kdensity att_did, range(0 4)) ///
-	(function y = 0, range(0 4) xline(2, lpattern(dash)) ///
-	text(1.5 2.1 "True ATT", place(north) orientation(vertical) size(small))) ///
-	,scheme(lean2) ///
-	legend(order (1 2 3) label(1 "GME") label(2 "Logit") label(3 "Uncorrected")) ///
-	title("Estimator Performance: Small Sample")
+       (kdensity att_logit, range(0 4)) ///
+       (kdensity att_did, range(0 4)) ///
+       (function y = 0, range(0 4)), ///
+       xline(`mean_true', lpattern(dash)) ///
+       text(1.5 2.1 "True ATT", placement(n) orientation(vertical) size(small)) ///
+       scheme(lean2) ///
+       legend(order(1 2 3) label(1 "GME") label(2 "Logit") ///
+              label(3 "Uncorrected")) ///
+       title("Estimator Performance: Small Sample")
 	
 graph export "reports/figures/estimator_small_sample.png", replace
 	
-* 1. Define the true ATT for your DGP
-scalar true_att = 2
 
 * 2. Generate bias variables
 gen double bias_logit = att_logit - true_att

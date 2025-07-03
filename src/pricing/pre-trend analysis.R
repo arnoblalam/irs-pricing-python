@@ -68,12 +68,16 @@ df_10y <- readxl::read_excel("data/pricing/ten year contracts pre-trend.xlsx") %
   filter_df() %>%
   fix_columns()
 
+df_2y <- df_2y %>% filter(Clr == 0)
+df_5y <- df_5y %>% filter(Clr == 0)
+df_10y <- df_10y %>% filter(Clr == 0)
 
-model_2y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Clr + Capped, 
+
+model_2y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Capped, 
             data = df_2y)
-model_5y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Clr + Capped, 
+model_5y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Capped, 
                data = df_5y)
-model_10y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Clr + Capped, 
+model_10y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Capped, 
                 data = df_10y)
 
 clustered_se_2y <- vcovCL(model_2y, cluster = ~ `Trade Date`)
@@ -85,13 +89,14 @@ res_5y <- coeftest(model_5y, vcov = clustered_se_5y)
 clustered_se_10y <- vcovCL(model_10y, cluster = ~ `Trade Date`)
 res_10y <- coeftest(model_10y, vcov = clustered_se_10y)
 
-stargazer::stargazer(res_2y, res_5y, res_10y, 
-                     type = "html",
-                     out = "reports/tables/pre-trend.html",
-                     title = "Pre-trend Analysis",
-                     column.labels = c("2-year contracts", "5-year contracts", "10-year contracts"),
-                     dep.var.labels = c("Fixed Rate"),
-                     nobs = TRUE,
-                     omit.table.layout = "n",
-                     model.numbers = FALSE,
-                     report = c("vcs"))
+stargazer::stargazer(model_2y, model_5y, model_10y,
+          type = "text",
+          #out = "reports/tables/pre-trend.html",
+          title = "Pre-trend Analysis",
+          column.labels = c("2-year contracts", "5-year contracts", "10-year contracts"),
+          dep.var.labels = c("Fixed Rate"),
+          omit.table.layout = "n",
+          model.numbers = FALSE,
+          se = list(sqrt(diag(clustered_se_2y)),
+                    sqrt(diag(clustered_se_5y)),
+                    sqrt(diag(clustered_se_10y))))

@@ -1,3 +1,5 @@
+set seed 123456
+
 capture program drop mc_abadie
 program define mc_abadie, rclass
 
@@ -27,6 +29,7 @@ program define mc_abadie, rclass
 
     gen double diffY = Ypost - Ypre
 
+
     // 2. ESTIMATE ABADIE ATT USING LOGIT FIRST STAGE
     // -----------------------------------------------
     quietly logit D X1 X2
@@ -48,6 +51,9 @@ program define mc_abadie, rclass
 
     gen double rho0_gme = (D - ps_gme)/(ps_gme*(1 - ps_gme))
     gen double intermediate_gme = rho0_gme * diffY * ps_gme
+    summarize intermediate_gme, meanonly
+    scalar unscaled_gme = r(mean)
+    scalar ATT_gme = (1/pd1) * unscaled_gme
 	
 	/// 4. Simple DiD
     summarize diffY if D==1, meanonly
@@ -58,14 +64,15 @@ program define mc_abadie, rclass
 
     scalar did_trad = diff_treated - diff_control
 
-    summarize intermediate_gme, meanonly
-    scalar unscaled_gme = r(mean)
-    scalar ATT_gme = (1/pd1) * unscaled_gme
-
     // 4. RETURN THE TWO ESTIMATES
     return scalar att_logit = ATT_logit
     return scalar att_gme   = ATT_gme
 	return scalar did_trad  = did_trad
+    // Compute the true ATT in this sample
+    gen double true_effect = 1.5 + 0.5*X1
+    quietly summarize true_effect if D==1
+    scalar this_true_att = r(mean)
+    return scalar true_att_mc = this_true_att
 	
 
 end
@@ -73,22 +80,27 @@ end
 
 simulate att_logit = r(att_logit) ///
          att_gme   = r(att_gme) ///
-		 att_did = r(did_trad), ///
+		 att_did = r(did_trad) ///
+		 true_att = r(true_att_mc), ///
          reps(5000) nodots: mc_abadie
+		 
+quietly summarize true_att
+local mean_true = r(mean)
+
 
 twoway (kdensity att_gme, range(0 4)) ///
-	(kdensity att_logit, range(0 4))  ///
-	(kdensity att_did, range(0 4)) ///
-	(function y = 0, range(0 4) xline(2, lpattern(dash)) ///
-	text(1.5 2.1 "True ATT", place(north) orientation(vertical) size(small))) ///
-	,scheme(lean2) ///
-	legend(order (1 2 3) label(1 "GME") label(2 "Logit") label(3 "Uncorrected")) ///
-	title("Estimator Performance: Baseline Case")
-	
+       (kdensity att_logit, range(0 4)) ///
+       (kdensity att_did, range(0 4)) ///
+       (function y = 0, range(0 4)), ///
+       xline(`mean_true', lpattern(dash)) ///
+       text(1.5 2.1 "True ATT", placement(n) orientation(vertical) size(small)) ///
+       scheme(lean2) ///
+       legend(order(1 2 3) label(1 "GME") label(2 "Logit") ///
+              label(3 "Uncorrected")) ///
+       title("Estimator Performance: Baseline Case")
+
 graph export "reports/figures/estimator_baseline.png", replace
 
-* 1. Define the true ATT for your DGP
-scalar true_att = 2
 
 * 2. Generate bias variables
 gen double bias_logit = att_logit - true_att
