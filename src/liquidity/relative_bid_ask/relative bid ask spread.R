@@ -4,8 +4,8 @@
 # Load necessary libraries
 library(readxl)
 library(dplyr)
-#library(lmtest)
-#library(sandwich)
+library(lmtest)
+library(sandwich)
 library(stargazer)
 
 # Load the data
@@ -25,14 +25,20 @@ model <- lm(`Relative Spread` ~ Curr * Period, data = df)
 model_2 <- lm(`Relative Spread` ~ Curr * Period + Tenor + `Equity Return` + 
                 Volatility, data = df)
 
+hc1_se_1 <- coeftest(model, vcov = vcovHC(model, type = "HC1"))[, 2]
+hc1_se_2 <- coeftest(model_2, vcov = vcovHC(model_2, type = "HC1"))[, 2]
+
 
 # Generate publication-quality table using stargazer
-stargazer(model, model_2, type = "html", 
-          out = "reports/tables/realized_bid_ask spread_20250119.html",
-          title = "Relative Bid-Ask Spread DiD Analysis", 
+stargazer(model, model_2, 
+          type = "text", 
+          # out = "reports/tables/realized_bid_ask spread_20250119.html",
+          title = "Relative Bid-Ask Spread DiD Analysis",
+          se = list(hc1_se_1, hc1_se_2),
           dep.var.labels = "Relative Spread", 
           covariate.labels = c("Group", "Period", 
                                "Tenor (2Y)", "Tenor (5Y)", "Equity Return",
                                "Volatility", "Group*Period"),
           column.labels = c("Simple Model", "Full Model"),
-          digits = 3)
+          digits = 3,
+          notes = "Robust (HC1) standard errors in parentheses.")
