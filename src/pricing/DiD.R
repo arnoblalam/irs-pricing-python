@@ -18,7 +18,7 @@ library(stargazer)
 library(stringr) 
 
 # Read the data from the Excel file
-data <- read_excel("data/pricing/USD_CAD_combined.xlsx", 
+data <- read_excel("data/pricing/combined/USD_CAD_combined.xlsx", 
                    col_types = c("text", "date", "text", 
                                  "numeric", "text", "text", "date", 
                                  "date", "numeric", "text", "numeric", 
