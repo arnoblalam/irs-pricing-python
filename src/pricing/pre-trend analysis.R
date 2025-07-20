@@ -45,6 +45,7 @@ filter_df <- function(df) {
     filter(`Leg 2` %in% c("USD-LIBOR-BBA", "CAD-BA-CDOR", "GBP-LIBOR-BBA", "CHF-LIBOR-BBA")) %>%
     filter(`PF 1` != "1T") %>% 
     filter(`PF 2` != "1T") %>%
+    filter(Clr != "C") %>%
     filter(is.na(`Othr Pmnt`))
   
     
@@ -59,7 +60,9 @@ fix_columns <- function(df) {
       SEF = if_else(SEF == "ON", 1, 0),
       `Trade Date` = as.Date(`Trade Time`),
       Curr = factor(Curr, levels = c("CAD", "USD")),
-      `Log Notional` = log(Notional))
+      `Log Notional` = log(Notional),
+      day  = as.numeric(`Trade Date` - min(`Trade Date`)),
+      dayc = day - mean(day))
 }
 
 # 2-year contracts
@@ -79,16 +82,16 @@ df_10y <- readxl::read_excel("data/pricing/ten year contracts pre-trend.xlsx") %
   filter_df() %>%
   fix_columns()
 
-df_2y <- df_2y %>% filter(Clr == 0)
-df_5y <- df_5y %>% filter(Clr == 0)
-df_10y <- df_10y %>% filter(Clr == 0)
+#df_2y <- df_2y %>% filter(Clr == 0)
+#df_5y <- df_5y %>% filter(Clr == 0)
+#df_10y <- df_10y %>% filter(Clr == 0)
 
 
-model_2y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Capped, 
+model_2y <- lm(`Rate 1` ~ Curr * day + `Log Notional` + Capped, 
             data = df_2y)
-model_5y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Capped, 
+model_5y <- lm(`Rate 1` ~ Curr * day + `Log Notional` + Capped, 
                data = df_5y)
-model_10y <- lm(`Rate 1` ~ Curr * `Trade Date` + `Log Notional` + Capped, 
+model_10y <- lm(`Rate 1` ~ Curr * day + `Log Notional` + Capped, 
                 data = df_10y)
 
 clustered_se_2y <- vcovCL(model_2y, cluster = ~ `Trade Date`)
@@ -101,12 +104,12 @@ clustered_se_10y <- vcovCL(model_10y, cluster = ~ `Trade Date`)
 res_10y <- coeftest(model_10y, vcov = clustered_se_10y)
 
 stargazer::stargazer(model_2y, model_5y, model_10y,
-          type = "text",
-          #out = "reports/tables/pre-trend.html",
+          type = "html",
+          out = "reports/tables/pre-trend.html",
           title = "Pre-trend Analysis",
           column.labels = c("2-year contracts", "5-year contracts", "10-year contracts"),
           dep.var.labels = c("Fixed Rate"),
-          omit.table.layout = "n",
+          notes = c(")Standard errors clustered by Trade Date in parentheses.)"),
           model.numbers = FALSE,
           se = list(sqrt(diag(clustered_se_2y)),
                     sqrt(diag(clustered_se_5y)),
