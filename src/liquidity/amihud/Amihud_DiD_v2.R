@@ -24,7 +24,9 @@ model_2 <- lm(Amihud ~ Curr * Period + Tenor + `Equity Return` + Volatility,
               data = df)
 
 # Generate publication-quality table using stargazer
-stargazer(model, model_2, type = "html", out = "reports/tables/Amihud_201250120.html",
+stargazer(model, model_2, 
+          type = "text", 
+          # out = "reports/tables/Amihud_201250120.html",
           title = "Amihud Measure DiD Analysis", 
           dep.var.labels = "Amihud Illiquidity Measure", 
           covariate.labels = c("Group", "Period", 

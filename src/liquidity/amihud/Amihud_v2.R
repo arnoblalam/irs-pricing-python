@@ -44,15 +44,14 @@ apply_default_filters <- function(df, currency = "USD") {
 calculate_amihud_measure <- function(df) {
   tenors <- c("2Y", "5Y", "10Y")
   df %>%
-    group_by(Tenor = `T`, `Trade Date` = date(`Trade Time`)) %>%
+    group_by(Curr, Tenor = `T`, `Trade Date` = date(`Trade Time`)) %>%
     arrange(`Trade Time`) %>%
     mutate(`Log Rate 1` = log(`Rate 1`),
            `Not. in Millions` = Not. / 1E6) %>%
     filter(Tenor %in% tenors) %>%
     mutate(Return = abs(`Log Rate 1` - lag(`Log Rate 1`)) * 100) %>%
-    mutate(`Price Imapct` = Return / `Not. in Millions`) %>%
-    summarize(Amihud = mean(`Price Imapct`, na.rm = TRUE),
-              Curr = last(Curr))
+    mutate(`Price Impact` = Return / `Not. in Millions`) %>%
+    summarize(Amihud = mean(`Price Impact`, na.rm = TRUE))
 }
 
 # Load in the data
@@ -109,4 +108,4 @@ usd_export <- do.call(bind_rows, usd_res)
 cad_export <- do.call(bind_rows, cad_res)
 
 my_export <- bind_rows(usd_export, cad_export)
-writex(my_export %>% ungroup(), "data/liquidity/Amihud/Amihud_Measure_20250119.xlsx")
+write_xlsx(my_export %>% ungroup(), "data/liquidity/Amihud/Amihud_Measure_20250119_.xlsx")
