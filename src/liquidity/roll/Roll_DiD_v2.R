@@ -12,7 +12,8 @@ model_2 <- lm(roll ~ Curr * Period + tenor + `Equity Return` + Volatility,
               data = df)
 
 # Generate publication-quality table using stargazer
-stargazer(model, model_2, type = "html", out = "reports/tables/roll_201250120.html",
+stargazer(model, model_2, type = "html", 
+          out = "reports/tables/roll_20250720.html",
           title = "Roll's Measure DiD Analysis", 
           dep.var.labels = "Roll's Measure", 
           covariate.labels = c("Group", "Period", 
